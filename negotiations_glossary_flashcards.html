@@ -46,6 +46,9 @@
   .segrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0 10px}
   .seglabel{font-family:ui-monospace,monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
 
+  .catbar{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .catselect{flex:1 1 auto;min-width:0;border:1px solid var(--rule);border-radius:10px;padding:9px 12px;font:inherit;font-size:14px;background:var(--card);color:var(--ink);cursor:pointer}
+  .catselect:focus{outline:2px solid var(--brand);outline-offset:1px;border-color:transparent}
   .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
   .chip{font:inherit;font-size:12px;border:1px solid var(--rule);background:var(--card);color:var(--muted);
     border-radius:99px;padding:5px 11px;cursor:pointer;white-space:nowrap}
@@ -188,7 +191,10 @@
     </div>
   </div>
 
-  <div class="chips" id="chips"></div>
+  <div class="catbar">
+    <label class="seglabel" for="catSelect">Topic</label>
+    <select class="catselect" id="catSelect" aria-label="Filter by topic"></select>
+  </div>
 
   <div class="controls">
     <input class="search" id="search" type="search" placeholder="Filter terms or definitions…" aria-label="Filter cards">
@@ -517,14 +523,13 @@ function updateStats(){
   $("bar").style.width=(p.length?(mastered/p.length*100):0)+"%";
 }
 function updateChips(){
-  const box=$("chips"); box.innerHTML="";
-  const mk=(key,label,n,cls)=>{ const b=document.createElement("button");
-    b.className="chip"+(cls?" "+cls:""); b.setAttribute("aria-pressed", cat===key);
-    b.innerHTML=escapeHtml(label)+(n!=null?' <span class="n">'+n+'</span>':'');
-    b.onclick=()=>{ cat=key; bi=0; refresh(); }; box.appendChild(b); };
-  mk("__all","All",ALL.length);
-  [...catCounts().entries()].sort((a,b)=>{const na=parseInt(a[0]),nb=parseInt(b[0]);if(!isNaN(na)&&!isNaN(nb))return na-nb;return b[1]-a[1];}).forEach(([c,n])=>mk(c,c,n));
-  const sc=starredCount(); mk("__starred","★ Starred",sc,"star");
+  const sel=$("catSelect"); if(!sel) return;
+  const opt=(v,l)=>{const o=document.createElement("option");o.value=v;o.textContent=l;if(v===cat)o.selected=true;return o;};
+  sel.innerHTML="";
+  sel.appendChild(opt("__all","All topics ("+ALL.length+")"));
+  [...catCounts().entries()].sort((a,b)=>{const na=parseInt(a[0]),nb=parseInt(b[0]);if(!isNaN(na)&&!isNaN(nb))return na-nb;return b[1]-a[1];})
+    .forEach(([c,n])=>sel.appendChild(opt(c,c+" ("+n+")")));
+  sel.appendChild(opt("__starred","★ Starred ("+starredCount()+")"));
 }
 function applyTheme(){ document.documentElement.dataset.theme=meta.theme;
   $("theme").textContent = meta.theme==="dark" ? "Light" : "Dark"; }
@@ -588,6 +593,7 @@ $("reset").onclick=doReset;
 $("theme").onclick=()=>{ meta.theme = meta.theme==="dark"?"light":"dark"; saveMeta(); applyTheme(); };
 $("print").onclick=()=>{ buildPrint(); window.print(); };
 $("search").addEventListener("input", ()=>refresh());
+$("catSelect").addEventListener("change", e=>{ cat=e.target.value; bi=0; refresh(); });
 
 document.addEventListener("keydown", e=>{
   if(e.target.tagName==="INPUT") return;
