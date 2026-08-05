@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ENMGT 5960 — Negotiations Glossary</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --ink:#303030; --paper:#f2f2f3; --card:#ffffff; --rule:#d9d6d0;
+    --brand:#B31B1B; --brand-dark:#8a1414; --brand-soft:#f0dcdc;
+    --muted:#5b5f63; --good:#2f7d59; --good-soft:#dcece1; --good-bd:#bcd9c8;
+    --warn:#b45309; --warn-soft:#f3e4cd; --warn-bd:#e6cfa6;
+    --shadow:rgba(48,48,48,.55);
+  }
+  html[data-theme="dark"]{
+    --ink:#e9e6e2; --paper:#151517; --card:#232326; --rule:#3a3a3d;
+    --brand:#e2555a; --brand-dark:#c23b40; --brand-soft:#3a2325;
+    --muted:#a7a29c; --good:#7fcfa3; --good-soft:#22332a; --good-bd:#2f4a3a;
+    --warn:#e0a35a; --warn-soft:#3a2f1e; --warn-bd:#4d3f28;
+    --shadow:rgba(0,0,0,.6);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:radial-gradient(120% 80% at 50% -10%, var(--card) 0%, var(--paper) 62%);
+    color:var(--ink);
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    -webkit-font-smoothing:antialiased;min-height:100%;
+    display:flex;flex-direction:column;align-items:center;padding:24px 18px 52px;
+  }
+  .wrap{width:100%;max-width:720px}
+  .topline{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+  header{display:flex;flex-direction:column;gap:3px;margin-bottom:6px}
+  .eyebrow{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    letter-spacing:.16em;text-transform:uppercase;font-size:11px;color:var(--brand)}
+  h1{margin:0;font-size:24px;font-weight:600;letter-spacing:-.01em;color:var(--brand)}
+  .sub{color:var(--muted);font-size:13px}
+  .iconbtn{font:inherit;font-size:13px;border:1px solid var(--rule);background:var(--card);
+    color:var(--brand);border-radius:9px;padding:7px 10px;cursor:pointer}
+  .iconbtn:hover{filter:brightness(.98)}
+
+  .seg{display:inline-flex;border:1px solid var(--rule);border-radius:10px;overflow:hidden;background:var(--card)}
+  .seg button{border:0;background:transparent;color:var(--muted);padding:8px 15px;font:inherit;font-size:13px;cursor:pointer}
+  .seg button[aria-pressed="true"]{background:var(--brand);color:#fff}
+  .segrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0 10px}
+  .seglabel{font-family:ui-monospace,monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em}
+
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+  .chip{font:inherit;font-size:12px;border:1px solid var(--rule);background:var(--card);color:var(--muted);
+    border-radius:99px;padding:5px 11px;cursor:pointer;white-space:nowrap}
+  .chip[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:#fff}
+  .chip .n{opacity:.65;font-size:11px;margin-left:4px}
+  .chip.star[aria-pressed="true"]{background:var(--warn);border-color:var(--warn)}
+
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+  .search{flex:1 1 180px;min-width:140px;border:1px solid var(--rule);border-radius:10px;
+    padding:9px 12px;font:inherit;font-size:14px;background:var(--card);color:var(--ink)}
+  .search:focus{outline:2px solid var(--brand);outline-offset:1px;border-color:transparent}
+  button.ghost{font:inherit;font-size:13px;border:1px solid var(--rule);background:var(--card);
+    color:var(--brand);border-radius:10px;padding:9px 13px;cursor:pointer;transition:transform .08s,background .15s}
+  button.ghost:hover{filter:brightness(.98)}
+  button.ghost:active{transform:translateY(1px)}
+  button:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+
+  .stats{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;
+    font-family:ui-monospace,monospace;font-size:12px;color:var(--muted)}
+  .stats b{font-weight:600;color:var(--ink)}
+  .stats .g{color:var(--good)} .stats .w{color:var(--warn)} .stats .r{color:var(--brand)}
+  .progress{flex:1;height:6px;border-radius:99px;background:var(--brand-soft);overflow:hidden;min-width:70px}
+  .bar{height:100%;background:linear-gradient(90deg,var(--brand),var(--brand-dark));width:0;transition:width .3s}
+
+  .stage{perspective:1600px}
+  .panel{border:1px solid var(--rule);border-radius:18px;background:var(--card);
+    box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 16px 36px -24px var(--shadow);
+    padding:32px 30px;min-height:300px;display:flex;flex-direction:column;justify-content:center}
+  /* flip card */
+  .card{position:relative;width:100%;min-height:300px;cursor:pointer;
+    transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,.2,.2,1);border-radius:18px}
+  .card.flip{transform:rotateY(180deg)} .card.instant{transition:none}
+  .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+    border:1px solid var(--rule);border-radius:18px;background:var(--card);
+    box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 16px 36px -24px var(--shadow);
+    padding:34px 30px;display:flex;flex-direction:column;justify-content:center}
+  .face .tag{position:absolute;top:15px;left:18px;font-family:ui-monospace,monospace;
+    font-size:10px;letter-spacing:.14em;text-transform:uppercase}
+  .front .tag{color:var(--brand)} .back .tag{color:var(--muted)}
+  .catlabel{position:absolute;top:14px;right:16px;font-family:ui-monospace,monospace;font-size:9.5px;
+    letter-spacing:.06em;text-transform:uppercase;color:var(--muted);opacity:.8;max-width:55%;text-align:right}
+  .starbtn{position:absolute;bottom:13px;right:16px;border:0;background:transparent;cursor:pointer;
+    font-size:18px;line-height:1;color:var(--rule)}
+  .starbtn.on{color:var(--warn)}
+  .back{transform:rotateY(180deg)}
+  .term{font-size:26px;line-height:1.22;font-weight:600;color:var(--brand);letter-spacing:-.01em}
+  .defn{font-size:18px;line-height:1.5;color:var(--ink)}
+  .ref{margin-top:12px;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:11px;line-height:1.4;color:var(--muted);opacity:.85}
+  .hint{position:absolute;bottom:14px;left:0;right:0;text-align:center;font-family:ui-monospace,monospace;
+    font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+  /* quiz */
+  .qtag{font-family:ui-monospace,monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+  .qprompt{font-size:19px;line-height:1.5;color:var(--ink);margin-bottom:18px}
+  .qinput{width:100%;border:1px solid var(--rule);border-radius:12px;padding:13px 14px;font:inherit;font-size:17px;background:var(--card);color:var(--ink)}
+  .qinput:focus{outline:2px solid var(--brand);outline-offset:1px;border-color:transparent}
+  .choices{display:grid;gap:9px}
+  .choice{text-align:left;font:inherit;font-size:16px;border:1px solid var(--rule);background:var(--card);color:var(--ink);
+    border-radius:12px;padding:13px 15px;cursor:pointer;transition:filter .12s}
+  .choice:hover{filter:brightness(.98)}
+  .choice.correct{background:var(--good-soft);border-color:var(--good-bd);color:var(--good)}
+  .choice.wrong{background:var(--warn-soft);border-color:var(--warn-bd);color:var(--warn)}
+  .choice:disabled{cursor:default}
+  .qresult{margin-top:16px;font-size:16px;line-height:1.45}
+  .qresult .ok{color:var(--good);font-weight:600} .qresult .no{color:var(--brand);font-weight:600}
+  .qresult .ans{color:var(--ink)}
+
+  .rate{display:flex;gap:12px;margin-top:16px}
+  .rate button{flex:1;font:inherit;font-size:15px;border-radius:12px;padding:14px;cursor:pointer;
+    border:1px solid var(--rule);transition:transform .08s,filter .15s,opacity .15s}
+  .rate button:active{transform:translateY(1px)}
+  .rate .got{background:var(--good-soft);border-color:var(--good-bd);color:var(--good)}
+  .rate .rev{background:var(--warn-soft);border-color:var(--warn-bd);color:var(--warn)}
+  .rate.locked button{opacity:.4;cursor:not-allowed}
+  .rate .k{font-family:ui-monospace,monospace;font-size:11px;opacity:.7;margin-left:6px}
+
+  .nav{display:flex;align-items:center;gap:12px;margin-top:16px;justify-content:center}
+  .nav .ghost{min-width:100px}
+  .counter{font-family:ui-monospace,monospace;font-size:12px;color:var(--muted);min-width:60px;text-align:center}
+  .actrow{display:flex;gap:10px;margin-top:16px;justify-content:flex-end}
+  .actrow .primary{background:var(--brand);color:#fff;border:1px solid var(--brand);border-radius:12px;padding:12px 18px;font:inherit;font-size:14px;cursor:pointer}
+
+  .kbd{font-family:ui-monospace,monospace;font-size:11px;color:var(--muted);text-align:center;margin-top:14px}
+  .empty{color:var(--muted);text-align:center}
+
+  .summary{text-align:center}
+  .summary h2{margin:0 0 4px;color:var(--brand);font-size:23px}
+  .summary p{margin:2px 0;color:var(--muted);font-size:15px}
+  .summary .big{font-size:40px;color:var(--brand);font-weight:600;margin:6px 0}
+  .sgrid{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;margin:10px 0 4px}
+  .sgrid div{font-family:ui-monospace,monospace;font-size:12px;color:var(--muted)}
+  .sgrid b{display:block;font-size:20px;color:var(--ink);font-family:inherit}
+  .missed{font-size:13px;color:var(--muted);margin-top:10px}
+  .acts{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:16px}
+  .acts button{font:inherit;font-size:14px;border-radius:12px;padding:11px 16px;cursor:pointer;border:1px solid var(--rule)}
+  .acts .primary{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .acts .ghost2{background:var(--card);color:var(--brand)}
+
+  .hidden{display:none !important}
+  @media (prefers-reduced-motion: reduce){.card,.bar{transition:none}}
+  @media (max-width:480px){.term{font-size:22px}.defn{font-size:16px}.face,.panel{padding:26px 20px}}
+
+  /* print */
+  #printSheet{display:none}
+  @media print{
+    body *{visibility:hidden}
+    #printSheet,#printSheet *{visibility:visible}
+    #printSheet{display:block;position:absolute;left:0;top:0;width:100%}
+    #printSheet h2{color:#000;font-size:18px;margin:0 0 4px}
+    #printSheet .pcat{font-weight:700;margin:14px 0 4px;font-size:13px;border-bottom:1px solid #999}
+    #printSheet .prow{margin:6px 0;font-size:12px;line-height:1.4}
+    #printSheet .pt{font-weight:700}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topline">
+    <header>
+      <span class="eyebrow">ENMGT 5960 · Negotiations</span>
+      <h1>Negotiations Glossary</h1>
+      <span class="sub" id="sub"></span>
+    </header>
+    <div style="display:flex;gap:6px">
+      <button class="iconbtn" id="theme" title="Toggle dark mode">Dark</button>
+      <button class="iconbtn" id="print" title="Print study sheet">Print</button>
+    </div>
+  </div>
+
+  <div class="segrow">
+    <div class="seg" role="group" aria-label="Mode">
+      <button id="mStudy" aria-pressed="true">Study</button>
+      <button id="mBrowse" aria-pressed="false">Browse</button>
+    </div>
+    <span class="seglabel" id="styleLabel">Style</span>
+    <div class="seg" id="styleSeg" role="group" aria-label="Study style">
+      <button id="sFlip" aria-pressed="true">Flip</button>
+      <button id="sType" aria-pressed="false">Type</button>
+      <button id="sChoice" aria-pressed="false">Choice</button>
+    </div>
+  </div>
+
+  <div class="chips" id="chips"></div>
+
+  <div class="controls">
+    <input class="search" id="search" type="search" placeholder="Filter terms or definitions…" aria-label="Filter cards">
+    <button class="ghost" id="shuffle">Shuffle</button>
+    <button class="ghost" id="restart">Restart</button>
+    <button class="ghost" id="reset">Reset progress</button>
+  </div>
+
+  <div class="stats" id="statsRow">
+    <span>Due <b class="r" id="sDue">0</b></span>
+    <span>Mastered <b class="g" id="sKnown">0</b>/<b id="sTotal">0</b></span>
+    <span>Streak <b id="sStreak">0</b>d</span>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+  </div>
+
+  <div class="stage" id="stage">
+    <!-- flip card -->
+    <div class="card" id="card" tabindex="0" role="button" aria-label="Flashcard, press space to flip">
+      <div class="face front">
+        <span class="tag">Term</span><span class="catlabel" id="fcat"></span>
+        <div class="term" id="front"></div>
+        <button class="starbtn" id="starF" title="Star this card" aria-label="Star this card">&#9734;</button>
+        <div class="hint">Click / Space to flip</div>
+      </div>
+      <div class="face back">
+        <span class="tag">Definition</span>
+        <div class="defn" id="back"></div>
+        <div class="ref" id="ref"></div>
+        <div class="hint">Click / Space to flip</div>
+      </div>
+    </div>
+    <!-- quiz -->
+    <div class="panel hidden" id="quiz">
+      <div class="qtag" id="qtag">Type the term</div>
+      <div class="qprompt defn" id="qprompt"></div>
+      <div class="ref" id="qref"></div>
+      <input class="qinput hidden" id="qinput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type the term, then Enter…">
+      <div class="choices hidden" id="qchoices"></div>
+      <div class="qresult hidden" id="qresult"></div>
+    </div>
+    <!-- summary / empty -->
+    <div class="panel hidden" id="summary"></div>
+    <div class="panel hidden" id="empty"><div class="empty" id="emptyMsg">Nothing here.</div></div>
+  </div>
+
+  <!-- action rows -->
+  <div class="rate locked hidden" id="rateRow">
+    <button class="rev" id="btnReview">Review again<span class="k">2</span></button>
+    <button class="got" id="btnGot">Got it<span class="k">1</span></button>
+  </div>
+  <div class="nav hidden" id="navRow">
+    <button class="ghost" id="prev">← Prev</button>
+    <span class="counter" id="counter"></span>
+    <button class="ghost" id="next">Next →</button>
+  </div>
+  <div class="actrow hidden" id="qactRow">
+    <button class="primary" id="qSubmit">Check</button>
+  </div>
+
+  <div class="kbd" id="kbd"></div>
+</div>
+
+<div id="printSheet"></div>
+
+<script>
+/* ---------- data ---------- */
+const FALLBACK = [{"t": "Affective vs. Instrumental Satisfaction", "d": "The two goals of a negotiation: affective satisfaction is how good the interaction itself felt, instrumental satisfaction is how good the substantive outcome was.", "c": "8. Emotions and psychology", "r": "Sec 2.x Emotions in Negotiation"}, {"t": "Affirmative Misrepresentation", "d": "A false statement about a material fact made in order to mislead. This is lying and can carry legal consequences.", "c": "9. Trust, ethics and reputation", "r": "Sec 1.12; Lewicki pp.134-135"}, {"t": "Agency Benefits", "d": "Reasons to use an agent: specialized knowledge, exclusive resources through reputation and relationships, superior bargaining skill, better access to the other side, a useful buffer, time savings, and the good cop / bad cop option.", "c": "16. Agents and representation", "r": "Sec 3.6-3.8"}, {"t": "Agency Costs", "d": "The price of representation: fees, plus monitoring costs and the losses that come from misaligned interests, incentives and information.", "c": "16. Agents and representation", "r": "Sec 3.6-3.8"}, {"t": "Agenda Control", "d": "Shaping which issues are discussed, in what order, and under what description. A quiet but decisive form of power, especially in multiparty talks.", "c": "4. Power, influence, communication", "r": "Course term list #30"}, {"t": "Agent", "d": "Someone who negotiates on behalf of a principal.", "c": "16. Agents and representation", "r": "Sec 1.3"}, {"t": "Allegiance", "d": "A shorter-term arrangement with another party for one specific objective, as distinct from a formal coalition.", "c": "10. Multiparty and constituencies", "r": "Sec 3.11"}, {"t": "Anchoring (and insufficient adjustment)", "d": "Bias in which an initial number, even an irrelevant one, pulls all later judgments toward it. One of the seven rationality biases in the course reading.", "c": "3. Biases and rationality", "r": "Course term list #10; Sec 2.1 rationality"}, {"t": "Arbitration", "d": "A neutral third party hears the case and issues a decision the parties have agreed in advance to accept.", "c": "11. Third parties and dispute resolution", "r": "Week 13"}, {"t": "Ask, Listen and Learn", "d": "Value-creation tactic set: ask questions, listen for priorities, share information strategically, shape the process, and then persuade.", "c": "2. Distributive vs integrative", "r": "'Solving Joint Problems' presentation"}, {"t": "Asking Gap", "d": "The documented difference in how often people initiate negotiation. In the Carnegie Mellon study 57 percent of men but only 7 percent of women negotiated their first offer, men earned about 7.6 percent more, and those who negotiated gained roughly 7.4 percent.", "c": "20. Gender, identity and voice", "r": "'Women Don't Ask' (Babcock and Laschever)"}, {"t": "Attribution Error", "d": "Explaining the other side's behaviour by their character while explaining your own identical behaviour by your circumstances.", "c": "3. Biases and rationality", "r": "Course term list #32"}, {"t": "Authority", "d": "Perceived expertise makes influence easier, because expertise is an efficient shortcut for the other party. The practical lesson is to make your expertise visible rather than assume it is known.", "c": "4. Power, influence, communication", "r": "Sec 2.9"}, {"t": "BATNA (Best Alternative to a Negotiated Agreement)", "d": "What you will do if no deal is reached. It is the real source of bargaining power, and your task is to make your offer look better to them than their own BATNA.", "c": "1. Core fundamentals", "r": "Course term list #2; Sec 1.4 Six Habits"}, {"t": "Belittling Your Alternatives", "d": "Attacking the credibility of your BATNA so that you lose confidence in your walk-away option.", "c": "5. Tactics and countertactics", "r": "Sec 1.3"}, {"t": "Blocking Techniques", "d": "Ways to deflect a question you do not want to answer truthfully, ranging from openly declining to answer to redirecting or answering a different question.", "c": "9. Trust, ethics and reputation", "r": "Three Schools of Bargaining Ethics presentation"}, {"t": "Bogey", "d": "Pretending that an issue of little real value to you is very important, so that later 'conceding' it buys something you actually want.", "c": "5. Tactics and countertactics", "r": "Course term list #19"}, {"t": "Bonding", "d": "Money or deferred rewards such as a pension that the agent forfeits if they act against the principal's interests. Limited by the difficulty of proving the outcome was the agent's fault.", "c": "16. Agents and representation", "r": "Sec 3.6-3.8"}, {"t": "Bridging", "d": "Inventing a new option that satisfies both sides' underlying interests instead of splitting the difference between the original demands.", "c": "2. Distributive vs integrative", "r": "Course term list #28"}, {"t": "Bridging the Culture Gap", "d": "Four coping options when cultures differ: work within their culture, work within yours, blend the two, or adopt a neutral third culture.", "c": "13. Culture", "r": "Sec 5.2"}, {"t": "City of Tamarac Exercise", "d": "Complex integrative, multi-issue exercise used in the second half of the course.", "c": "21. Course exercises and cases", "r": "Week 9"}, {"t": "Clarity, Neutrality and Temperance", "d": "The three building blocks for handling a stressful conversation: say plainly what you mean, hold a neutral tone, and choose non-provoking phrasing. Paired with acknowledging responsibility, clarifying, and openly naming the other side's tactics.", "c": "14. High-stakes and stressful settings", "r": "Sec 6.4"}, {"t": "Closing", "d": "The final stage in which terms are locked in. Signals that it is time: their concessions get smaller, a deadline approaches, your main goals are met, and there is enough trust to make a final offer.", "c": "19. Closing and follow-through", "r": "Sec 4.1"}, {"t": "Closing Techniques", "d": "Named ways to bring a negotiation to agreement: concession close, summarizing close, splitting the difference, alternative close, assumption close, incremental close, linkage close, prompting close and ultimatum close.", "c": "19. Closing and follow-through", "r": "Sec 4.1"}, {"t": "Coalition", "d": "A relatively formal, often longer-term alliance built on shared aims in order to amplify influence. Coalitions are powerful but fragile and need an explicit purpose, decision rules and a spokesperson.", "c": "10. Multiparty and constituencies", "r": "Course term list #45; Sec 3.11"}, {"t": "Cognitive Biases", "d": "Systematic judgment errors. The seven named in the course reading are framing, irrational escalation of commitment, mythical fixed pie, anchoring, availability bias, ignoring others' cognitions, and overconfidence.", "c": "3. Biases and rationality", "r": "Course term list #40; Sec 2.1"}, {"t": "Collaborative Advantage", "d": "Outcomes achieved jointly that no single party could have reached alone; the payoff that justifies collaborating at all.", "c": "17. Collaboration and teams", "r": "Sec 3.12 / collaboration reading"}, {"t": "Collaborative Inertia", "d": "When a collaboration consumes time, trust and attention but produces very little tangible output, usually because aims, roles or leadership were never made explicit.", "c": "17. Collaboration and teams", "r": "Sec 3.12 / collaboration reading"}, {"t": "Commitment Tactic", "d": "Claiming your hands are tied by policy, a board or a mandate in order to shrink the other side's sense of what is possible. Counter it by verifying the claim and asking to deal with someone who has authority.", "c": "5. Tactics and countertactics", "r": "Sec 1.3"}, {"t": "Compatible, Trade-off and Distributive Issues", "d": "Compatible issues are ones both sides want the same way, trade-off issues have differing relative priorities and can be logrolled, and distributive issues are directly opposed.", "c": "2. Distributive vs integrative", "r": "Course term list #72"}, {"t": "Concession Strategy", "d": "The deliberate plan for the size, timing and pattern of your give-and-take, including how you will label concessions and reframe them as trades.", "c": "6. Planning and strategy", "r": "Course term list #22"}, {"t": "Consistency", "d": "People act in line with commitments they have already made, especially public ones.", "c": "4. Power, influence, communication", "r": "Sec 2.9"}, {"t": "Constituency Pressures", "d": "The demands of the people you represent, such as a boss, team, client or membership, which limit what you can credibly agree to at the table.", "c": "10. Multiparty and constituencies", "r": "Course term list #49 and #75; Week 6"}, {"t": "Contingent Agreement", "d": "An if-then clause built into a deal to manage an uncertain future. Four uses in the reading: it is self-enforcing, it settles disagreements about predictions, it schedules check-ins instead of awkward confrontations, and it builds in a dispute process.", "c": "7. Contracts and agreement design", "r": "Course term list #29 and #73; Sec 6.2"}, {"t": "Cost Cutting", "d": "Reducing the specific costs the other side would bear from your preferred outcome, so their resistance falls without you giving up substance.", "c": "2. Distributive vs integrative", "r": "Course term list #27"}, {"t": "Create Value / Claim Value", "d": "The paired activities of every negotiation: expanding the pie, then dividing it. Doing only the second leaves value on the table; doing only the first leaves you with none of it.", "c": "2. Distributive vs integrative", "r": "'Solving Joint Problems' presentation"}, {"t": "Creating vs. Claiming Value", "d": "The first of the three tensions: expanding the pie by finding new sources of value while still making sure you capture a fair share of it.", "c": "15. Tensions and balancing acts", "r": "Sec 1.3"}, {"t": "Cultural Assumption", "d": "An unproven supposition widely held inside a culture, usually invisible to its own members, that quietly guides their behaviour.", "c": "13. Culture", "r": "Sec 5.1"}, {"t": "Cultural Iceberg", "d": "Model of culture in which behaviours and institutions are visible above the waterline while values, norms, knowledge structures, beliefs and assumptions sit hidden below. Ignore the iceberg and the deal sinks.", "c": "13. Culture", "r": "Sec 5.1"}, {"t": "Cultural Norms", "d": "Standards of appropriate and inappropriate behaviour within a cultural context, including how directly things are said.", "c": "13. Culture", "r": "Sec 5.1"}, {"t": "Cultural Prototype vs. Stereotype", "d": "A prototype is a culture's central tendency, with real variation among its members and overlap with other cultures. A stereotype is the mistaken belief that everyone in a culture is the same.", "c": "13. Culture", "r": "Sec 5.1"}, {"t": "Cultural Values", "d": "Shared judgments about what matters in social interaction. The two dimensions the course flags as most consequential for negotiation are individualism vs. collectivism and hierarchy vs. egalitarianism.", "c": "13. Culture", "r": "Sec 5.1"}, {"t": "Dangerous Negotiation", "d": "A negotiation conducted under life-threatening or extreme pressure, such as hostage or combat situations, as distinct from the 'extreme negotiations' method used to handle it.", "c": "14. High-stakes and stressful settings", "r": "Extreme Negotiations presentation"}, {"t": "Deal-Minded Approach", "d": "Orientation focused on getting to signature. It risks producing agreements that look good on paper but cannot actually be carried out.", "c": "7. Contracts and agreement design", "r": "Course term list #63; Week 12"}, {"t": "Deception", "d": "Creating a false impression. The course stresses that not all deception is an outright lie: puffing, non-disclosure, evasiveness and misleading conduct also shape belief.", "c": "9. Trust, ethics and reputation", "r": "Course term list #44; 'Negotiation With Liars'"}, {"t": "Dispute Resolution Approaches", "d": "The spectrum of ways conflict gets handled: avoidance, direct negotiation, mediation, arbitration, litigation, and unilateral power or self-help. Part of the course is choosing which fits a given scenario.", "c": "11. Third parties and dispute resolution", "r": "Course term list #71; Module 1 objectives"}, {"t": "Distributive Bargaining", "d": "Claiming value from a pie assumed to be fixed; classic win-lose haggling such as arguing over the price of a used car.", "c": "2. Distributive vs integrative", "r": "Course term list #7; Week 4; Sec 1.3"}, {"t": "Double Agent", "d": "The extreme case, where the agent's incentives are so misaligned that they tacitly serve the other side, helped by their power to filter information.", "c": "16. Agents and representation", "r": "Sec 3.8"}, {"t": "Dual Concerns Model (strategy grid)", "d": "Choosing a strategy from the importance of the outcome against the importance of the relationship: competitive (win-lose), collaborative (win-win), accommodating (lose to win), avoiding (lose-lose), and compromise in the middle.", "c": "6. Planning and strategy", "r": "Sec 1.2 handout"}, {"t": "Emotional Intelligence", "d": "The applied capacity for self-awareness, self-regulation, self-motivation, patience and empathy during a negotiation.", "c": "8. Emotions and psychology", "r": "Course term list #33; 'Become a Master Negotiator'"}, {"t": "Emotional Preparation", "d": "Deciding in advance how you want to feel, why that state matters, and how you will get there; knowing your own triggers; and having recovery routines such as breaks and breathing. Prepare emotionally the way you prepare financially.", "c": "8. Emotions and psychology", "r": "Negotiating with Emotions"}, {"t": "Emotions as Information", "d": "The course position that feelings are not obstacles to be suppressed but signals about what matters most, which should be channelled rather than hidden.", "c": "8. Emotions and psychology", "r": "Negotiating with Emotions"}, {"t": "Empathy vs. Assertiveness", "d": "The second tension: understanding the other side well enough to solve their problem while still expressing your own interests clearly and confidently. The goal is both, not a compromise between them.", "c": "15. Tensions and balancing acts", "r": "Sec 1.3"}, {"t": "Employee Exit Interview (Jamieson Associates)", "d": "Case in which exit terms such as unused sick days and stock buy-back value are negotiated, used to show emotional and interpersonal intelligence in practice.", "c": "21. Course exercises and cases", "r": "'Become a Master Negotiator'"}, {"t": "Endowment Effect", "d": "People value what they already own more highly than an identical thing they do not own, roughly 40 percent more in the classic mug studies, because giving it up registers as a loss.", "c": "3. Biases and rationality", "r": "Course term list #57; Sec 2.1"}, {"t": "Escalation of Commitment", "d": "Irrationally staying with a course of action, or a bidding war, because of what you have already invested in it.", "c": "3. Biases and rationality", "r": "Course term list #56; Sec 2.1"}, {"t": "Ethical Standards", "d": "The criteria used to judge conduct at the table, including where acceptable exaggeration ends and misrepresentation begins.", "c": "9. Trust, ethics and reputation", "r": "Course term list #43; Week 3"}, {"t": "Exploding Offer", "d": "An offer carrying an artificial, very short deadline used as leverage to force a rushed decision. It relies on power asymmetry and coercion rather than mutual benefit.", "c": "5. Tactics and countertactics", "r": "Course term list #15; Sec 1.7"}, {"t": "Extreme Claims with Small, Slow Concessions", "d": "Opening with an inflated demand to distort the perceived bargaining range, then giving tiny increments so the midpoint lands in your favour. Counter it by being clear about your own demands and knowing your BATNA and bottom line.", "c": "5. Tactics and countertactics", "r": "Sec 1.3"}, {"t": "Extreme Negotiations", "d": "The five-strategy approach developed for high-stakes and dangerous settings: get the big picture, uncover and collaborate, elicit genuine buy-in, build trust first, and focus on process.", "c": "14. High-stakes and stressful settings", "r": "Course term list #67"}, {"t": "Face-Saving", "d": "Protecting the other party's dignity and self-image so that they can move or concede without appearing defeated to themselves or their constituency.", "c": "8. Emotions and psychology", "r": "Course term list #35"}, {"t": "Farpoint Gambit", "d": "Response to an exploding offer: accept enthusiastically but conditionally, attaching legitimate and specific conditions that inherently need more time, so the artificial deadline lapses on its own.", "c": "5. Tactics and countertactics", "r": "Sec 1.7 student presentation"}, {"t": "Faulty Agent", "d": "An agent whose underlying incentives conflict with the interests of the person they represent, often because of their own relationship with the other side.", "c": "16. Agents and representation", "r": "Sec 3.8"}, {"t": "Fixed-Pie Perception (mythical fixed pie)", "d": "The false assumption that your gain must come at their expense, which causes negotiators to miss value-creating trades.", "c": "3. Biases and rationality", "r": "Course term list #37; Sec 2.1"}, {"t": "Flinch", "d": "A visible or audible over-reaction to an offer, staged to make the other party revise their own number downward before you even respond.", "c": "5. Tactics and countertactics", "r": "Course term list #20; Sec 1.3"}, {"t": "Framing", "d": "The cognitive lens that shapes how value, fairness, risk and choices are perceived. Types covered: substantive, outcome, aspiration, process, identity, characterization and loss-gain (risk) framing. Reframing is treated as a crucial negotiation skill.", "c": "3. Biases and rationality", "r": "Course term list #31; Sec 2.1"}, {"t": "Free Agent", "d": "An agent who effectively acts independently because they control the process and are driven mainly to close any deal that secures their fee or reputation.", "c": "16. Agents and representation", "r": "Sec 3.8"}, {"t": "Good Cop / Bad Cop", "d": "A two-person routine in which one negotiator is harsh and the other reasonable, so that modest terms feel like relief. Also cited as a reason to hire an agent.", "c": "5. Tactics and countertactics", "r": "Course term list #14; Sec 1.3, 3.6"}, {"t": "Hardball / Hard-Bargaining Tactics", "d": "Pressure moves used by tough negotiators. The ten in the course reading: extreme claims with small slow concessions, commitment tactics, take-it-or-leave-it offers, inviting unreciprocated offers, making you flinch, personal insults, bluffing/puffing/lying, threats and warnings, belittling your alternatives, and good cop/bad cop.", "c": "5. Tactics and countertactics", "r": "Course term list #13; Sec 1.3"}, {"t": "High-Context vs. Low-Context Culture", "d": "In high-context cultures much of the meaning sits in relationship, setting and implication; in low-context cultures meaning is expected to be stated explicitly in the words themselves.", "c": "13. Culture", "r": "Course term list #66; Sec 5.1"}, {"t": "Impermissible Omission", "d": "Failing to disclose information you have a legal duty to reveal. What must be disclosed varies by context and jurisdiction.", "c": "9. Trust, ethics and reputation", "r": "Sec 1.12; 'When is it legal to lie'"}, {"t": "Implementation-Minded Approach", "d": "Orientation that designs the deal for life after signature: workability, monitoring, review points, relationships and the social contract.", "c": "7. Contracts and agreement design", "r": "Course term list #62; Week 12"}, {"t": "Impulse, Tendency, Mood and Attitude", "d": "The vocabulary of emotional states: an impulse is sudden behaviour without thought, a tendency is a behavioural urge attached to an emotion, a mood is a low-intensity affective state, and an attitude is a positive or negative evaluation of something.", "c": "8. Emotions and psychology", "r": "Untapped Power: Emotions in Negotiation"}, {"t": "Incentive Contract", "d": "A compensation structure such as commission, hourly rate, fixed fee, bonus or penalty designed to align the agent with the principal. Every scheme creates some incentive that can turn perverse.", "c": "16. Agents and representation", "r": "Sec 3.6-3.8"}, {"t": "Indirect Strategies", "d": "Approaches such as working harder to earn what you want, hinting rather than asking, or focusing on shared goals instead of personal gain. Thoughtful and often effective, but frequently undervalued in workplaces that reward direct asking.", "c": "20. Gender, identity and voice", "r": "'Women Don't Ask'"}, {"t": "Information Asymmetry", "d": "One party knows more than the other. It is simultaneously the raw material for value creation and the opening for exploitation.", "c": "4. Power, influence, communication", "r": "Course term list #12"}, {"t": "Integrative Negotiation", "d": "Creating value by trading across issues that the parties value differently, so the pie grows before it is divided.", "c": "2. Distributive vs integrative", "r": "Course term list #8; Week 4 and Week 9"}, {"t": "Interest-Based Negotiation", "d": "An approach organized around underlying interests, joint problem solving, objective criteria and inventing options for mutual gain, rather than around positional trading.", "c": "2. Distributive vs integrative", "r": "Course term list #61"}, {"t": "Interests vs. Positions", "d": "A position is what someone says they want; an interest is why they want it. Arguing positions produces deadlock, exploring interests produces options.", "c": "2. Distributive vs integrative", "r": "Course term list #9; Sec 1.4"}, {"t": "Intrateam Negotiation", "d": "Negotiating internally to align your own side on goals, priorities, roles and mandate before facing the other party. Internal alignment produces a stronger external position.", "c": "17. Collaboration and teams", "r": "Sec 3.12; Week 10"}, {"t": "Knight vs. Excalibur", "d": "Case used to illustrate creating value and then claiming it, by mapping each side's priorities such as price, delivery speed, quality guarantee, surplus disposal and brand visibility.", "c": "21. Course exercises and cases", "r": "'Solving Joint Problems' presentation"}, {"t": "Knowledge Structures", "d": "The internalized answer to 'what does a person like me do in a situation like this', which is cued by context and shapes behaviour at the table.", "c": "13. Culture", "r": "Sec 5.1"}, {"t": "Labeling Concessions", "d": "Explicitly naming what you are giving up and what it costs you, so that it is recognized as a concession and is more likely to be reciprocated.", "c": "6. Planning and strategy", "r": "Course term list #58"}, {"t": "Liking", "d": "People say yes more readily to those they like. Practised by uncovering genuine similarities early and offering praise that shows you value what they value.", "c": "4. Power, influence, communication", "r": "Sec 2.9"}, {"t": "Live8 Email Negotiation", "d": "Exercise negotiating entirely by email, used to surface how the medium changes communication, tone, pacing and trust.", "c": "21. Course exercises and cases", "r": "Week 4"}, {"t": "Logrolling", "d": "Trading across issues according to priority: each side gives way on what it cares less about and gains on what it cares most about.", "c": "2. Distributive vs integrative", "r": "Course term list #26"}, {"t": "Loss-Gain (risk) Framing", "d": "Losses loom larger than equivalent gains. A loss frame pushes people toward risk-seeking behaviour, a gain frame toward risk-aversion. Selling naturally feels like gaining, buying like losing.", "c": "3. Biases and rationality", "r": "Sec 2.1 student presentations"}, {"t": "Mediation", "d": "A neutral third party helps the parties reach their own agreement. The mediator manages process, not outcome, and cannot impose a decision.", "c": "11. Third parties and dispute resolution", "r": "Week 13; Sec 5.1-5.3"}, {"t": "MESO (Multiple Equivalent Simultaneous Offers)", "d": "Presenting two or three offers that are worth about the same to you. Their choice reveals their priorities without you conceding anything.", "c": "6. Planning and strategy", "r": "Course term list #24"}, {"t": "Midwestern Contemporary Art (Case 5)", "d": "Case built around a broken donation pledge, used to examine constituencies, relationships, reputation and how disputes escalate.", "c": "21. Course exercises and cases", "r": "Week 6"}, {"t": "Miscommunication / Noise", "d": "The gap between what was meant, what was said, what was heard and what was understood, including silence and non-verbal signals.", "c": "4. Power, influence, communication", "r": "Course term list #39"}, {"t": "Monitoring System", "d": "Oversight designed to verify that an agent is performing. It is expensive, cannot always distinguish good behaviour from good luck, and hiring a second expert to watch the first invites collusion.", "c": "16. Agents and representation", "r": "Sec 3.6-3.8"}, {"t": "Moves", "d": "Strategic actions designed to put the other party on the defensive: challenging their competence or expertise, demeaning their ideas, criticizing their style, making threats, or appealing for sympathy and flattery.", "c": "12. Moves, turns and the shadow negotiation", "r": "Course term list #52; Sec 3.1"}, {"t": "Multiparty Dynamics", "d": "The extra complexity created by additional parties: coalition formation, information overload, harder process management, and the need for someone to chair or facilitate.", "c": "10. Multiparty and constituencies", "r": "Course term list #47; Sec 3.10-3.11"}, {"t": "Negotiation", "d": "An interactive process in which two or more interdependent parties with some conflicting interests try to reach a joint decision. Treated in this course as a universal, everyday skill rather than a business-only activity.", "c": "1. Core fundamentals", "r": "Course term list #1; Sec 1.1-1.5"}, {"t": "Negotiation is the Art of Letting Them Have Your Way", "d": "Course maxim: the aim is not to win an argument but to shape the other side's decision so that choosing what you want is in their own interest.", "c": "18. Becoming a better negotiator", "r": "Sec 1.4"}, {"t": "Negotiation Jujitsu", "d": "Refusing to counter-attack. Instead of pushing back on an attack, you sidestep it and redirect the energy toward interests, criticism of the problem, and questions.", "c": "5. Tactics and countertactics", "r": "Course term list #16"}, {"t": "Negotiation Planning Framework", "d": "Structured pre-work before talking: issues and priorities, goals and targets, your BATNA and reservation price, their likely interests and BATNA, strategy choice, and a concession plan.", "c": "6. Planning and strategy", "r": "Course term list #21; Week 2"}, {"t": "Neutral Expert / Fact-Finder", "d": "An agreed independent specialist who investigates disputed technical facts, with both sides committing in advance to follow the finding. A standard component of contingent agreements.", "c": "11. Third parties and dispute resolution", "r": "Sec 6.2"}, {"t": "Neutral No", "d": "Declining clearly and calmly, without hostility or apology, so the relationship and the conversation both survive the refusal.", "c": "4. Power, influence, communication", "r": "Course term list #60"}, {"t": "Nibbling", "d": "Asking for small extra concessions once the main deal is essentially agreed and the other side is emotionally committed to closing.", "c": "5. Tactics and countertactics", "r": "Course term list #18"}, {"t": "Opening Offer", "d": "The first proposal put on the table. It anchors perceptions and signals the bargaining range. A course theme: the opening position is never the final position.", "c": "1. Core fundamentals", "r": "Course term list #5; Sec 5.3"}, {"t": "Pacific Oil (Case 1)", "d": "Case study of a long-running supply contract renegotiation, used to examine planning failures and drift into distributive bargaining.", "c": "21. Course exercises and cases", "r": "Week 2"}, {"t": "Pandas for San Diego Zoo (Case 2)", "d": "Complex multi-issue international negotiation case, used with the contracts material.", "c": "21. Course exercises and cases", "r": "Weeks 10 and 12"}, {"t": "Paradoxes of Negotiation", "d": "The built-in tensions a negotiator has to hold at once: claiming value vs. creating value, empathy vs. assertiveness, being a principal vs. serving as an agent, sticking to strategy vs. adapting, and honesty vs. discretion.", "c": "15. Tensions and balancing acts", "r": "Course term list #74; Sec 1.3"}, {"t": "Pareto Efficiency", "d": "A deal from which no party can be made better off without making another worse off. The benchmark for whether value was left on the table.", "c": "2. Distributive vs integrative", "r": "Course term list #25"}, {"t": "Partially True Statement", "d": "A statement that is technically accurate but constructed to mislead by leaving out the information that matters. Course advice: if unsure, stay silent rather than mislead.", "c": "9. Trust, ethics and reputation", "r": "Sec 1.12"}, {"t": "Participative Turns (changing the game)", "d": "Turns that invite the other party into joint problem solving and reframe the issue at a broader level, rather than just defending your position.", "c": "12. Moves, turns and the shadow negotiation", "r": "Course term list #55; Sec 3.1"}, {"t": "Partisanship Bias (partisan perceptions)", "d": "Seeing your own side as virtuous and competent and the other side as aggressive and unreasonable, which exaggerates the conflict and can become self-fulfilling.", "c": "3. Biases and rationality", "r": "Course term list #69; Sec 1.4"}, {"t": "Pemberton's Dilemma", "d": "Week 1 in-class exercise with a social dilemma structure, used to expose how quickly parties fall into competitive, distributive behaviour over repeated rounds.", "c": "21. Course exercises and cases", "r": "Week 1"}, {"t": "Personal Bargaining Inventory", "d": "Self-assessment assignment used to surface your own beliefs, habits and comfort zones as a negotiator.", "c": "21. Course exercises and cases", "r": "Week 4"}, {"t": "Personal Negotiation Style", "d": "Your characteristic pattern of behaviour at the table. The course assumes no single personality type guarantees success; effectiveness depends on the situation and on self-awareness.", "c": "18. Becoming a better negotiator", "r": "Week 1; Personal Bargaining Inventory"}, {"t": "Post-Negotiation Analysis", "d": "Systematic review after the fact of what happened, what you would repeat and what you would change. One of the stated learning objectives of the course.", "c": "18. Becoming a better negotiator", "r": "Module 1 learning objectives"}, {"t": "Power Balance / Imbalance", "d": "The relative dependence of the parties on each other. Imbalance is what makes coercive tactics such as exploding offers possible.", "c": "4. Power, influence, communication", "r": "Course term list #50"}, {"t": "Principal", "d": "The person or group whose interests are being represented in a negotiation.", "c": "16. Agents and representation", "r": "Sec 1.3"}, {"t": "Principal vs. Agent Tension", "d": "The third tension: the interests, incentives and information of the person being represented do not fully match those of their representative. Best managed by naming it up front and treating it as a shared problem with agreed boundaries.", "c": "16. Agents and representation", "r": "Sec 1.3, 3.6"}, {"t": "Puffing", "d": "Exaggerated, opinion-based positive claims about your value or position. Generally treated as acceptable because it is opinion rather than a false statement of hard fact.", "c": "9. Trust, ethics and reputation", "r": "Sec 1.12"}, {"t": "Qualities of Master Negotiators", "d": "Harmony (aligning interests for mutual gain), pragmatism (staying realistic), innovation (creative ways past deadlock), vision (looking past short-term results) and strategy (anticipating and adapting).", "c": "18. Becoming a better negotiator", "r": "'Become a Master Negotiator'"}, {"t": "Reactive Devaluation", "d": "Automatically valuing a proposal or concession less simply because it came from the other side.", "c": "3. Biases and rationality", "r": "Course term list #36"}, {"t": "Reassurance Tactics", "d": "Moves that lower the other side's perceived risk so they can say yes: guarantees, performance bonds, monitoring rights, phased commitments and scheduled reviews.", "c": "7. Contracts and agreement design", "r": "Course term list #68; Sec 6.2"}, {"t": "Reciprocity", "d": "The felt obligation to return favours, disclosures and concessions in kind.", "c": "4. Power, influence, communication", "r": "Sec 2.9"}, {"t": "Red Paperclip Exercise", "d": "Four-week trading-up exercise requiring at least four trades per week, with results logged and reflected on. Its point is practising the ask, hearing no without taking it personally, and letting small gains compound.", "c": "21. Course exercises and cases", "r": "Weeks 1-4"}, {"t": "Reputation", "d": "Your accumulated record as a counterpart. Treated in the ethics module as your single most valuable asset, and the reason short-run deception is a bad trade.", "c": "9. Trust, ethics and reputation", "r": "Course term list #41; Sec 1.12"}, {"t": "Reservation Price (walk-away / bottom line)", "d": "The least favourable terms at which you would still say yes. It should be calculated from your BATNA, not from a feeling.", "c": "1. Core fundamentals", "r": "Course term list #3"}, {"t": "Restorative Turns (staying in the game)", "d": "Turns that re-establish your legitimacy and standing on the existing terms of the discussion, for example correcting the record with evidence.", "c": "12. Moves, turns and the shadow negotiation", "r": "Course term list #54; Sec 3.1"}, {"t": "Role Ambiguity", "d": "Unclear authority, mandate or responsibility, especially inside teams and multiparty talks, which stalls decisions and creates openings for others.", "c": "10. Multiparty and constituencies", "r": "Course term list #70"}, {"t": "Scarcity", "d": "Perceived limited availability raises desirability. Also the engine behind deadline pressure tactics.", "c": "4. Power, influence, communication", "r": "Sec 2.9"}, {"t": "Schools of Bargaining Ethics", "d": "Three stances: the Poker school (negotiation is a game with rules, bluffing is part of play), the Idealist school (lying is a selfish act and is simply wrong), and the Pragmatist school (avoid deception whenever a workable alternative exists, because what goes around comes around).", "c": "9. Trust, ethics and reputation", "r": "Course term list #65; Sec 1.11-1.13"}, {"t": "Self-Enforcing Agreement", "d": "A deal whose built-in rewards and penalties (performance bonds, escalating payments, shutdown triggers) make compliance the rational choice, so enforcement does not depend on litigation.", "c": "7. Contracts and agreement design", "r": "Sec 6.2 refinery example"}, {"t": "Self-Serving Role Bias", "d": "Unconsciously interpreting the facts and the definition of fairness in whatever way favours the role you happen to occupy.", "c": "3. Biases and rationality", "r": "Sec 1.4"}, {"t": "Sequential vs. Package Offers", "d": "Negotiating one issue at a time versus bundling several issues together. Packages reveal relative priorities and make trades possible; sequential talks tend to become distributive.", "c": "6. Planning and strategy", "r": "Course term list #23"}, {"t": "Shadow Negotiation", "d": "The parallel, largely unspoken negotiation about identity, legitimacy, authority, and the influence of gender and race, which runs underneath the formal agenda.", "c": "12. Moves, turns and the shadow negotiation", "r": "Course term list #51; Sec 3.1 (Kolb)"}, {"t": "Six Habits of Merely Effective Negotiators", "d": "The six recurring mistakes: neglecting the other side's problem, letting price bulldoze other interests, letting positions drive out interests, searching too hard for common ground, neglecting BATNAs, and failing to correct for skewed vision.", "c": "18. Becoming a better negotiator", "r": "Sec 1.4"}, {"t": "Six Pre-Checks Before Building a Coalition", "d": "Before joining or forming one, test: is there a common objective, what is your influence, is there leadership bandwidth, who is genuinely behind you, who controls information, and how fragile is the group.", "c": "10. Multiparty and constituencies", "r": "Sec 3.11"}, {"t": "Six Principles of Persuasion (Cialdini)", "d": "Liking, reciprocity, social proof, consistency, authority and scarcity. They work as mental shortcuts, can be learned, and influence behaviour more strongly than formal power does.", "c": "4. Power, influence, communication", "r": "Sec 2.9"}, {"t": "Snow Job", "d": "Burying the other side under excessive or irrelevant information so that the facts that matter are hard to find.", "c": "5. Tactics and countertactics", "r": "Course term list #17"}, {"t": "Social Contract", "d": "The unwritten mutual expectations about how the parties will work together and handle problems that arise later, distinct from the written terms.", "c": "7. Contracts and agreement design", "r": "Sec 1.4"}, {"t": "Social Dilemma", "d": "A situation in which each party's self-interested choice makes everyone worse off collectively; the structure behind the Pemberton's Dilemma exercise.", "c": "10. Multiparty and constituencies", "r": "Course term list #46; Week 1"}, {"t": "Social Proof", "d": "Cialdini principle: people take their cue from the behaviour of comparable others, especially under uncertainty.", "c": "4. Power, influence, communication", "r": "Course term list #34; Sec 2.9"}, {"t": "Sources of Power", "d": "The bases of leverage: a strong BATNA, information, expertise, formal authority, relationships, coalitions and legitimacy. The course stresses that persuasion skill influences behaviour more than formal power does.", "c": "4. Power, influence, communication", "r": "Course term list #11; Sec 2.9 Cialdini"}, {"t": "Splitting the Difference", "d": "Settling midway between two stated positions. Fast and feels fair, but rewards whoever anchored more extremely.", "c": "5. Tactics and countertactics", "r": "Closing presentation, Sec 4.1"}, {"t": "Stakeholder Mapping", "d": "Identifying every party affected by a deal along with their interests, power and route of influence, before you start negotiating.", "c": "10. Multiparty and constituencies", "r": "Course term list #75; Week 6"}, {"t": "Stress Triggers in Negotiation", "d": "The three structural sources of negotiation stress: lack of control because you need someone else's yes, unpredictability because you cannot script the exchange, and the absence of clear performance feedback afterwards.", "c": "8. Emotions and psychology", "r": "Negotiating with Emotions"}, {"t": "Stressful Conversations", "d": "Unavoidable high-emotion exchanges of three basic types: delivering bad news, 'what is going on here', and being attacked. Avoiding them makes the problem or the relationship worse.", "c": "14. High-stakes and stressful settings", "r": "Sec 6.4"}, {"t": "Take-It-or-Leave-It Offer", "d": "An ultimatum framing that shuts down exploration of alternatives and packages.", "c": "5. Tactics and countertactics", "r": "Sec 1.3"}, {"t": "Target Point (aspiration)", "d": "The realistic best outcome you are aiming for. Setting high aspirations is a documented way to resist being influenced by the other side.", "c": "1. Core fundamentals", "r": "Course term list #4; 'Should You Be A Negotiator'"}, {"t": "Ten Factors in Deal Making", "d": "Dimensions on which cultures differ in negotiation: goal, attitudes, personal style, communication, time sensitivity, emotionalism, agreement form, agreement building, team organization and risk taking.", "c": "13. Culture", "r": "Sec 5.2"}, {"t": "Third-Party Intervention", "d": "Bringing in an outsider to help: mediation, arbitration, med-arb, facilitation, or fact-finding by a neutral expert.", "c": "11. Third parties and dispute resolution", "r": "Course term list #48; Sec 3.6-3.9, Week 13"}, {"t": "Triple Competency", "d": "The three things a master negotiator has to manage at once: mastery of substance, management of the relationship, and management of the process.", "c": "18. Becoming a better negotiator", "r": "'Become a Master Negotiator'"}, {"t": "Trust Building", "d": "A gradual process created through reliability, kept promises, respect and genuine concern. The course argument is that trust outlasts fear or authority as a source of cooperation.", "c": "9. Trust, ethics and reputation", "r": "Course term list #38; 'Extreme Negotiations'"}, {"t": "Trust but Verify", "d": "Working principle behind contingent agreements and monitoring rights: you can proceed on trust while still building in verification, so trust is not the only thing holding the deal together.", "c": "7. Contracts and agreement design", "r": "Sec 6.2"}, {"t": "Trust Repair", "d": "Deliberate recovery after a breach: acknowledge responsibility, explain, apologize, make restitution, then rebuild through small verifiable commitments.", "c": "9. Trust, ethics and reputation", "r": "Course term list #42"}, {"t": "Trust-Building Loop", "d": "The reinforcing cycle in which a small commitment is kept, which justifies sharing more information, which supports a larger commitment.", "c": "9. Trust, ethics and reputation", "r": "Course term list #59"}, {"t": "Turns", "d": "Resistive responses to a move, aimed at restoring your position, credibility and sense of agency. Named types include interrupting, naming the move, questioning, correcting and diverting.", "c": "12. Moves, turns and the shadow negotiation", "r": "Course term list #53; Sec 3.1"}, {"t": "ZOPA (Zone of Possible Agreement) / bargaining range", "d": "The overlap between the two sides' reservation prices. If there is no overlap, no deal is possible without changing the issues.", "c": "1. Core fundamentals", "r": "Course term list #6"}];
+const XLSX_FILE = "ENMGT5960_Negotiations_Glossary.xlsx";
+const STATE_KEY = "enmgt5960_srs_v1";
+const META_KEY  = "enmgt5960_meta_v1";
+const OLD_KEY   = "enmgt5960_old_v1";
+const DAY = 86400000;
+const MASTER_DAYS = 7;      // interval at which a card counts as "mastered"
+
+const $ = id => document.getElementById(id);
+const card = $("card");
+
+let ALL = FALLBACK.slice();
+let state = load(STATE_KEY, {});
+let meta  = Object.assign({streak:0, lastDate:null, theme:"light"}, load(META_KEY, {}));
+let mode = "study", style = "flip", cat = "__all";
+let pool = [], queue = [], cur = null, flipped = false, bi = 0, answered = false;
+let session = null, redraw = ()=>{};
+
+function load(k, d){ try{ return JSON.parse(localStorage.getItem(k)) ?? d; }catch(e){ return d; } }
+function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+function saveState(){ save(STATE_KEY, state); }
+function saveMeta(){ save(META_KEY, meta); }
+
+/* ---------- spaced repetition (SM-2-ish) ---------- */
+function defState(){ return {ease:2.5, interval:0, due:0, reps:0, lapses:0, seen:0, wrong:0, starred:false}; }
+function st(t){ if(!state[t]) state[t] = defState(); return state[t]; }
+function endOfToday(){ const d=new Date(); d.setHours(23,59,59,999); return d.getTime(); }
+function isDue(t){ const s=state[t]; return !s || s.due <= endOfToday(); }
+function isMastered(t){ const s=state[t]; return !!s && s.interval >= MASTER_DAYS; }
+
+function schedule(t, pass, easy){
+  const s = st(t); s.seen++;
+  if(!pass){ s.reps=0; s.lapses++; s.wrong++; s.ease=Math.max(1.3, s.ease-0.2); s.interval=1; }
+  else{
+    s.reps++;
+    if(easy) s.ease=Math.min(3.0, s.ease+0.15);
+    if(s.reps===1) s.interval = easy?3:1;
+    else if(s.reps===2) s.interval = easy?7:3;
+    else s.interval = Math.round(s.interval * s.ease * (easy?1.3:1));
+  }
+  s.due = Date.now() + s.interval*DAY;
+  saveState();
+}
+function migrate(){
+  const old = load(OLD_KEY, []);
+  if(Array.isArray(old) && old.length && Object.keys(state).length===0){
+    old.forEach(t=>{ const s=st(t); s.reps=2; s.interval=4; s.due=Date.now()+4*DAY; });
+    saveState();
+  }
+}
+
+/* ---------- streak ---------- */
+function dstr(d){ return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); }
+function bumpStreak(){
+  const today = dstr(new Date());
+  if(meta.lastDate === today) return;
+  const y = new Date(); y.setDate(y.getDate()-1);
+  meta.streak = (meta.lastDate === dstr(y)) ? meta.streak+1 : 1;
+  meta.lastDate = today; saveMeta();
+}
+
+/* ---------- categories + pool ---------- */
+function catCounts(){ const m=new Map(); ALL.forEach(c=>{ if(c.c) m.set(c.c,(m.get(c.c)||0)+1); }); return m; }
+function starredCount(){ return ALL.filter(c=>st(c.t).starred).length; }
+function computePool(){
+  let p = ALL.slice();
+  if(cat==="__starred") p = p.filter(c=>st(c.t).starred);
+  else if(cat!=="__all") p = p.filter(c=>c.c===cat);
+  const q = ($("search").value||"").trim().toLowerCase();
+  if(q) p = p.filter(c=>(c.t+" "+c.d).toLowerCase().includes(q));
+  return p;
+}
+
+/* ---------- math rendering ---------- */
+function renderText(el, text){
+  el.textContent = text;
+  if(window.renderMathInElement){
+    try{ renderMathInElement(el, {delimiters:[{left:"$",right:"$",display:false}], throwOnError:false}); }
+    catch(e){}
+  }else if(text.indexOf("$")>=0){
+    el.textContent = stripLatex(text);
+  }
+}
+function stripLatex(s){
+  return s.replace(/\$/g,"")
+    .replace(/\\text\{([^{}]*)\}/g,"$1")
+    .replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g,"($1) / ($2)")
+    .replace(/\\times/g,"\u00d7").replace(/\\%/g,"%")
+    .replace(/([A-Za-z])_\{?([A-Za-z0-9]+)\}?/g,"$1$2")
+    .replace(/[{}]/g,"").replace(/\\[a-zA-Z]+/g,"")
+    .replace(/\s+/g," ").trim();
+}
+
+/* ---------- helpers ---------- */
+function shuffle(a){ for(let k=a.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[a[k],a[j]]=[a[j],a[k]];} return a; }
+function hideAll(){ ["card","quiz","summary","empty"].forEach(id=>$(id).classList.add("hidden"));
+  ["rateRow","navRow","qactRow"].forEach(id=>$(id).classList.add("hidden")); }
+function setStar(){ const on = cur && st(cur.t).starred; $("starF").classList.toggle("on", !!on);
+  $("starF").innerHTML = on ? "&#9733;" : "&#9734;"; }
+
+/* ---------- flip card ---------- */
+function setFace(c){
+  card.classList.add("instant"); flipped=false; card.classList.remove("flip");
+  $("front").textContent = c.t;
+  $("fcat").textContent = c.c || "";
+  renderText($("back"), c.d);
+  { const rf=$("ref"); if(rf){ rf.textContent=c.r?("\u21b3 "+c.r):""; rf.style.display=c.r?"block":"none"; } }
+  setStar();
+  void card.offsetWidth; requestAnimationFrame(()=>card.classList.remove("instant"));
+}
+function flip(){ flipped=!flipped; card.classList.toggle("flip",flipped);
+  if(mode==="study" && style==="flip") $("rateRow").classList.toggle("locked", !flipped); }
+
+/* ---------- presenters ---------- */
+function presentFlip(c){ hideAll(); cur=c; $("card").classList.remove("hidden");
+  $("rateRow").classList.remove("hidden"); $("rateRow").classList.add("locked"); setFace(c);
+  redraw=()=>presentFlip(c); }
+function presentBrowse(c){ hideAll(); cur=c; $("card").classList.remove("hidden");
+  $("navRow").classList.remove("hidden"); setFace(c);
+  $("counter").textContent=(bi+1)+" / "+pool.length; redraw=()=>presentBrowse(c); }
+function presentType(c){ hideAll(); cur=c; answered=false;
+  $("quiz").classList.remove("hidden"); $("qactRow").classList.remove("hidden");
+  $("qtag").textContent="Type the term"; renderText($("qprompt"), c.d); { const qr=$("qref"); if(qr){ qr.textContent=c.r?("\u21b3 "+c.r):""; qr.style.display=c.r?"block":"none"; } }
+  $("qchoices").classList.add("hidden"); $("qresult").classList.add("hidden");
+  const inp=$("qinput"); inp.classList.remove("hidden"); inp.value=""; inp.disabled=false;
+  $("qSubmit").textContent="Check"; setTimeout(()=>inp.focus(),30); redraw=()=>presentType(c); }
+function presentChoice(c){ hideAll(); cur=c; answered=false;
+  $("quiz").classList.remove("hidden");
+  $("qtag").textContent="Pick the term"; renderText($("qprompt"), c.d); { const qr=$("qref"); if(qr){ qr.textContent=c.r?("\u21b3 "+c.r):""; qr.style.display=c.r?"block":"none"; } }
+  $("qinput").classList.add("hidden"); $("qactRow").classList.add("hidden");
+  $("qresult").classList.add("hidden");
+  const box=$("qchoices"); box.classList.remove("hidden"); box.innerHTML="";
+  const opts=shuffle([c.t, ...distractors(c)]);
+  opts.forEach(term=>{
+    const b=document.createElement("button"); b.className="choice"; b.textContent=term;
+    b.onclick=()=>pickChoice(b, term, c); box.appendChild(b);
+  });
+  redraw=()=>presentChoice(c); }
+
+function distractors(c){
+  const same=ALL.filter(x=>x.t!==c.t && x.c===c.c);
+  const src=(same.length>=3?same:ALL.filter(x=>x.t!==c.t));
+  return shuffle(src.slice()).slice(0,3).map(x=>x.t);
+}
+
+/* ---------- grading ---------- */
+function afterAnswer(pass, easy){
+  if(session){ session.answered++; if(pass)session.correct++; session.ms += performance.now()-session.start; }
+  bumpStreak(); schedule(cur.t, pass, !!easy);
+  const c=queue.shift();
+  if(!pass && c) queue.splice(Math.min(queue.length,4),0,c);
+  updateStats(); nextCard();
+}
+function rate(gotIt){ if(!flipped) return; afterAnswer(gotIt, false); }
+
+function submitType(){
+  const inp=$("qinput");
+  if(answered){ afterAnswer(lastPass, false); return; }
+  const ok=matches(inp.value, cur.t); answered=true; lastPass=ok; inp.disabled=true;
+  const res=$("qresult"); res.classList.remove("hidden");
+  res.innerHTML = (ok?'<span class="ok">Correct.</span> ':'<span class="no">Not quite.</span> ')+
+    '<span class="ans">Answer: '+escapeHtml(cur.t)+'</span>';
+  $("qSubmit").textContent="Next →";
+}
+let lastPass=false;
+function pickChoice(btn, term, c){
+  if(answered) return; answered=true;
+  const ok = term===c.t; lastPass=ok;
+  [...$("qchoices").children].forEach(b=>{ b.disabled=true;
+    if(b.textContent===c.t) b.classList.add("correct");
+    else if(b===btn) b.classList.add("wrong"); });
+  const res=$("qresult"); res.classList.remove("hidden");
+  res.innerHTML = ok?'<span class="ok">Correct.</span>':'<span class="no">Answer: '+escapeHtml(c.t)+'</span>';
+  setTimeout(()=>afterAnswer(ok,false), ok?650:1100);
+}
+
+/* ---------- fuzzy matching (type mode) ---------- */
+function norm(s){ return (s||"").toLowerCase().replace(/\([^)]*\)/g," ").replace(/[^a-z0-9]+/g," ").replace(/\s+/g," ").trim(); }
+function abbrOf(s){ const m=(s||"").match(/\(([^)]+)\)/); return m?m[1].toLowerCase().replace(/[^a-z0-9]/g,""):null; }
+function lev(a,b){ const m=a.length,n=b.length; if(!m)return n; if(!n)return m;
+  const dp=Array.from({length:m+1},(_,i)=>[i,...Array(n).fill(0)]); for(let j=0;j<=n;j++)dp[0][j]=j;
+  for(let i=1;i<=m;i++)for(let j=1;j<=n;j++){ const c=a[i-1]===b[j-1]?0:1;
+    dp[i][j]=Math.min(dp[i-1][j]+1,dp[i][j-1]+1,dp[i-1][j-1]+c); } return dp[m][n]; }
+function matches(input, term){
+  const ni=norm(input); if(!ni) return false;
+  const ab=abbrOf(term);
+  if(ab && (input||"").toLowerCase().replace(/[^a-z0-9]/g,"")===ab) return true;
+  const base=term.replace(/\([^)]*\)/g," ");           // drop abbreviations
+  const alts=base.split(/\/|,/).map(norm).filter(Boolean);
+  const full=norm(term); if(!alts.includes(full)) alts.push(full);
+  for(const a of alts){
+    if(ni===a) return true;
+    if(ni.replace(/s$/,"")===a.replace(/s$/,"")) return true;
+    if(lev(ni,a) <= Math.max(1, Math.floor(a.length*0.12))) return true;
+  }
+  return false;
+}
+function escapeHtml(s){ return s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* ---------- sessions ---------- */
+function newSession(cards){ session={total:cards.length, answered:0, correct:0, ms:0, start:0};
+  queue=shuffle(cards.slice()); nextCard(); }
+function nextCard(){
+  if(!queue.length) return finishSession();
+  const c=queue[0]; session.start=performance.now();
+  if(style==="flip") presentFlip(c);
+  else if(style==="type") presentType(c);
+  else presentChoice(c);
+}
+function startStudy(ahead){
+  pool=computePool(); updateChips();
+  const due = ahead ? pool.slice() : pool.filter(c=>isDue(c.t));
+  if(!due.length){ showNothingDue(); return; }
+  newSession(due); updateStats();
+}
+function showNothingDue(){
+  hideAll(); const s=$("summary"); s.classList.remove("hidden");
+  const mastered=pool.filter(c=>isMastered(c.t)).length;
+  s.innerHTML='<div class="summary"><h2>All caught up</h2>'+
+    '<p>Nothing is due in this set right now.</p>'+
+    '<div class="big">'+mastered+' / '+pool.length+'</div><p>mastered</p>'+
+    '<div class="acts"><button class="primary" id="ahead">Study ahead anyway</button>'+
+    '<button class="ghost2" id="resetS">Reset progress</button></div></div>';
+  $("ahead").onclick=()=>startStudy(true);
+  $("resetS").onclick=doReset; redraw=showNothingDue; updateStats();
+}
+function finishSession(){
+  hideAll(); const s=$("summary"); s.classList.remove("hidden");
+  const acc = session.answered ? Math.round(session.correct/session.answered*100) : 0;
+  const avg = session.answered ? (session.ms/session.answered/1000) : 0;
+  const missed = pool.map(c=>({t:c.t,w:st(c.t).wrong})).filter(x=>x.w>0).sort((a,b)=>b.w-a.w).slice(0,3);
+  const mastered=pool.filter(c=>isMastered(c.t)).length;
+  s.innerHTML='<div class="summary"><h2>Session complete</h2>'+
+    '<div class="sgrid"><div><b>'+acc+'%</b>accuracy</div>'+
+    '<div><b>'+session.total+'</b>cards</div>'+
+    '<div><b>'+avg.toFixed(1)+'s</b>avg / card</div>'+
+    '<div><b>'+meta.streak+'d</b>streak</div></div>'+
+    '<p>'+mastered+' / '+pool.length+' mastered in this set</p>'+
+    (missed.length?'<div class="missed">Most missed: '+missed.map(m=>escapeHtml(m.t)+' ('+m.w+')').join(' · ')+'</div>':'')+
+    '<div class="acts"><button class="primary" id="again">Study ahead</button>'+
+    '<button class="ghost2" id="restartS">Restart due</button>'+
+    '<button class="ghost2" id="resetS">Reset progress</button></div></div>';
+  $("again").onclick=()=>startStudy(true);
+  $("restartS").onclick=()=>startStudy(false);
+  $("resetS").onclick=doReset; redraw=finishSession; updateStats();
+}
+
+/* ---------- browse ---------- */
+function browse(){ pool=computePool(); updateChips();
+  if(!pool.length){ hideAll(); $("empty").classList.remove("hidden"); $("emptyMsg").textContent="No cards match."; updateStats(); return; }
+  bi=(bi+pool.length)%pool.length; presentBrowse(pool[bi]); updateStats(); }
+
+/* ---------- stats + chips + theme ---------- */
+function updateStats(){
+  const p=computePool();
+  const mastered=p.filter(c=>isMastered(c.t)).length;
+  const due=p.filter(c=>isDue(c.t)).length;
+  $("sDue").textContent=due; $("sKnown").textContent=mastered; $("sTotal").textContent=p.length;
+  $("sStreak").textContent=meta.streak;
+  $("bar").style.width=(p.length?(mastered/p.length*100):0)+"%";
+}
+function updateChips(){
+  const box=$("chips"); box.innerHTML="";
+  const mk=(key,label,n,cls)=>{ const b=document.createElement("button");
+    b.className="chip"+(cls?" "+cls:""); b.setAttribute("aria-pressed", cat===key);
+    b.innerHTML=escapeHtml(label)+(n!=null?' <span class="n">'+n+'</span>':'');
+    b.onclick=()=>{ cat=key; bi=0; refresh(); }; box.appendChild(b); };
+  mk("__all","All",ALL.length);
+  [...catCounts().entries()].sort((a,b)=>{const na=parseInt(a[0]),nb=parseInt(b[0]);if(!isNaN(na)&&!isNaN(nb))return na-nb;return b[1]-a[1];}).forEach(([c,n])=>mk(c,c,n));
+  const sc=starredCount(); mk("__starred","★ Starred",sc,"star");
+}
+function applyTheme(){ document.documentElement.dataset.theme=meta.theme;
+  $("theme").textContent = meta.theme==="dark" ? "Light" : "Dark"; }
+
+/* ---------- orchestration ---------- */
+function refresh(){
+  updateChips();
+  if(mode==="study") startStudy(false);
+  else browse();
+  updateStats();
+}
+function setMode(m){ mode=m;
+  $("mStudy").setAttribute("aria-pressed",m==="study");
+  $("mBrowse").setAttribute("aria-pressed",m==="browse");
+  $("styleSeg").style.display = m==="study" ? "" : "none";
+  $("styleLabel").style.display = m==="study" ? "" : "none";
+  $("kbd").textContent = m==="study"
+    ? (style==="flip" ? "Space / F flips · 1 = Got it · 2 = Review again" : "Enter to check · then Enter for next")
+    : "← → browse · Space / F flips";
+  refresh();
+}
+function setStyle(s){ style=s;
+  $("sFlip").setAttribute("aria-pressed",s==="flip");
+  $("sType").setAttribute("aria-pressed",s==="type");
+  $("sChoice").setAttribute("aria-pressed",s==="choice");
+  $("kbd").textContent = s==="flip" ? "Space / F flips · 1 = Got it · 2 = Review again" : "Enter to check · then Enter for next";
+  if(mode==="study") startStudy(false);
+}
+function doReset(){ state={}; saveState(); refresh(); }
+
+/* ---------- print ---------- */
+function buildPrint(){
+  const groups=new Map();
+  computePool().forEach(c=>{ const k=c.c||"Uncategorized"; if(!groups.has(k))groups.set(k,[]); groups.get(k).push(c); });
+  let html='<h2>ENMGT 5960 — Negotiations Glossary</h2>';
+  [...groups.entries()].forEach(([g,arr])=>{
+    html+='<div class="pcat">'+escapeHtml(g)+'</div>';
+    arr.forEach(c=>{ html+='<div class="prow"><span class="pt">'+escapeHtml(c.t)+':</span> '+escapeHtml(stripLatex(c.d))+(c.r?' <em>('+escapeHtml(c.r)+')</em>':'')+'</div>'; });
+  });
+  $("printSheet").innerHTML=html;
+}
+
+/* ---------- events ---------- */
+card.addEventListener("click", flip);
+$("starF").addEventListener("click", e=>{ e.stopPropagation(); if(!cur)return;
+  const s=st(cur.t); s.starred=!s.starred; saveState(); setStar(); updateChips(); });
+$("btnGot").onclick=()=>rate(true);
+$("btnReview").onclick=()=>rate(false);
+$("mStudy").onclick=()=>setMode("study");
+$("mBrowse").onclick=()=>setMode("browse");
+$("sFlip").onclick=()=>setStyle("flip");
+$("sType").onclick=()=>setStyle("type");
+$("sChoice").onclick=()=>setStyle("choice");
+$("prev").onclick=()=>{bi--;browse();};
+$("next").onclick=()=>{bi++;browse();};
+$("qSubmit").onclick=submitType;
+$("qinput").addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); submitType(); } });
+$("shuffle").onclick=()=>{ if(mode==="study"){ shuffle(queue); nextCard(); } else { shuffle(pool); bi=0; presentBrowse(pool[0]); } };
+$("restart").onclick=()=>{ if(mode==="study") startStudy(false); else { bi=0; browse(); } };
+$("reset").onclick=doReset;
+$("theme").onclick=()=>{ meta.theme = meta.theme==="dark"?"light":"dark"; saveMeta(); applyTheme(); };
+$("print").onclick=()=>{ buildPrint(); window.print(); };
+$("search").addEventListener("input", ()=>refresh());
+
+document.addEventListener("keydown", e=>{
+  if(e.target.tagName==="INPUT") return;
+  const k=e.key.toLowerCase();
+  if(mode==="study" && style==="flip"){
+    if(k===" "||k==="f"){flip();e.preventDefault();}
+    else if(k==="1"||k==="j"){rate(true);e.preventDefault();}
+    else if(k==="2"||k==="l"){rate(false);e.preventDefault();}
+  } else if(mode==="browse"){
+    if(k===" "||k==="f"){flip();e.preventDefault();}
+    else if(e.key==="ArrowRight"){bi++;browse();e.preventDefault();}
+    else if(e.key==="ArrowLeft"){bi--;browse();e.preventDefault();}
+  }
+});
+
+/* ---------- xlsx load + init ---------- */
+async function loadFromXlsx(){
+  try{
+    if(typeof XLSX==="undefined") return;
+    const res=await fetch(XLSX_FILE,{cache:"no-store"}); if(!res.ok) return;
+    const wb=XLSX.read(await res.arrayBuffer(),{type:"array"});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const rows=XLSX.utils.sheet_to_json(ws,{defval:""});
+    const parsed=rows.map(r=>{ const keys=Object.keys(r);
+      const f=n=>{ const k=keys.find(k=>String(k).trim().toLowerCase()===n); return k?String(r[k]).trim():""; };
+      return {t:f("term"), d:f("definition"), c:f("topic area")||f("category"), r:f("where it comes up in the course")||f("where it comes up")||f("source")}; }).filter(c=>c.t&&c.d);
+    if(parsed.length) ALL=parsed;
+  }catch(e){}
+}
+(async function init(){
+  migrate();
+  await loadFromXlsx();
+  applyTheme();
+  $("sub").textContent = ALL.length + " terms · 21 topics · spaced repetition, quizzes, and course references";
+  setStyle("flip"); setMode("study");
+})();
+window.addEventListener("load", ()=>{ if(window.renderMathInElement) redraw(); });
+</script>
+</body>
+</html>
