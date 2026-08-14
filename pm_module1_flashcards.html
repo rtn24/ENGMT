@@ -567,9 +567,9 @@ function buildPrint(){
 
 function downloadXlsx(){
   if(typeof XLSX==="undefined"){ alert("Excel export needs the spreadsheet library, which appears to be blocked on this network."); return; }
-  const data=[["Term","Definition","Module number"]];
+  const data=[["Term","Definition","Module"]];
   ALL.forEach(c=>data.push([c.t,c.d,MODULE]));
-  const ws=XLSX.utils.aoa_to_sheet(data); ws["!cols"]=[{wch:32},{wch:94},{wch:16}];
+  const ws=XLSX.utils.aoa_to_sheet(data); ws["!cols"]=[{wch:32},{wch:94},{wch:12}];
   const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Glossary");
   XLSX.writeFile(wb,"ENMGT5900_"+MODULE.replace(/\s+/g,"")+"_flashcards.xlsx");
 }
@@ -620,7 +620,7 @@ async function loadFromXlsx(){
     const rows=XLSX.utils.sheet_to_json(ws,{defval:""});
     const parsed=rows.map(r=>{ const keys=Object.keys(r);
       const f=n=>{ const k=keys.find(k=>String(k).trim().toLowerCase()===n); return k?String(r[k]).trim():""; };
-      return {t:f("term"), d:f("definition"), m:f("module number")||f("module")}; }).filter(c=>c.t&&c.d && c.m && c.m.trim().toLowerCase()===MODULE.trim().toLowerCase()).map(c=>({t:c.t,d:c.d,c:""}));
+      return {t:f("term"), d:f("definition"), m:f("module")}; }).filter(c=>c.t&&c.d && c.m && c.m.trim().toLowerCase()===MODULE.trim().toLowerCase()).map(c=>({t:c.t,d:c.d,c:""}));
     if(parsed.length) ALL=parsed;
   }catch(e){}
 }
