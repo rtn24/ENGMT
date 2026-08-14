@@ -171,6 +171,7 @@
     <div style="display:flex;gap:6px">
       <button class="iconbtn" id="theme" title="Toggle dark mode">Dark</button>
       <button class="iconbtn" id="print" title="Print study sheet">Print</button>
+      <button class="iconbtn" id="download" title="Download these flashcards as Excel">Excel</button>
     </div>
   </div>
 
@@ -252,7 +253,7 @@
 
 <script>
 /* ---------- data ---------- */
-const FALLBACK = [{"t": "'Calm Down' Fallacy", "d": "Telling a visibly tense person to 'calm down' reflects an unhealthy attitude toward emotions and typically backfires.", "c": ""}, {"t": "7 Red Flags", "d": "A set of warning signs of problematic workplace behavior/communication discussed in class — a specific list to recognize and address early.", "c": ""}, {"t": "AEIOU (Listening Framework)", "d": "A class acronym for active/effective listening — a structured reminder of good listening behaviors.", "c": ""}, {"t": "Barriers to Effective Listening", "d": "Obstacles such as distraction, prejudging, formulating your reply while the other person talks, and emotional reactivity.", "c": ""}, {"t": "Conflict-Handling Modes", "d": "Five approaches from the conflict readings: Collaboration (win-win problem solving), Compromise (mutual give-and-take), Smoothing/Accommodating (emphasizing agreement, downplaying differences), Forcing (asserting your position to win), and Withdrawing/Avoiding (retreating from the conflict).", "c": ""}, {"t": "Fundamental Attribution Error", "d": "The tendency to blame others' failures on their character while attributing our own failures to external circumstances.", "c": ""}, {"t": "Passive-Aggressive Behavior", "d": "Indirect expression of negative feelings (e.g. silent treatment, backhanded comments, deliberate procrastination) instead of open communication.", "c": ""}, {"t": "Phubbing", "d": "Snubbing someone in a social interaction by paying attention to your phone instead of them.", "c": ""}, {"t": "Sympathy vs. Empathy", "d": "Sympathy is feeling for someone (pity/acknowledgment from a distance); empathy is feeling with them (understanding their perspective from their point of view). Empathy is the more valuable PM skill.", "c": ""}, {"t": "Venting (Supportive Response)", "d": "When someone vents, they first need to feel heard/validated — not an immediate action plan or a redirect to your own similar story.", "c": ""}];
+const FALLBACK = [{"t": "'Calm Down' Fallacy", "d": "Telling a visibly tense person to 'calm down' reflects an unhealthy attitude toward emotions and typically backfires.", "c": ""}, {"t": "7 Red Flags", "d": "A set of warning signs of problematic workplace behavior/communication discussed in class — a specific list to recognize and address early.", "c": ""}, {"t": "AEIOU (Listening Framework)", "d": "A class acronym for active/effective listening — a structured reminder of good listening behaviors.", "c": ""}, {"t": "Barriers to Effective Listening", "d": "Obstacles such as distraction, prejudging, formulating your reply while the other person talks, and emotional reactivity.", "c": ""}, {"t": "Conflict-Handling Modes", "d": "Five approaches from the conflict readings: Collaboration (win-win problem solving), Compromise (mutual give-and-take), Smoothing/Accommodating (emphasizing agreement, downplaying differences), Forcing (asserting your position to win), and Withdrawing/Avoiding (retreating from the conflict).", "c": ""}, {"t": "Fundamental Attribution Error", "d": "The tendency to blame others' failures on their character while attributing our own failures to external circumstances.", "c": ""}, {"t": "Phubbing", "d": "Snubbing someone in a social interaction by paying attention to your phone instead of them.", "c": ""}, {"t": "Sympathy vs. Empathy", "d": "Sympathy is feeling for someone (pity/acknowledgment from a distance); empathy is feeling with them (understanding their perspective from their point of view). Empathy is the more valuable PM skill.", "c": ""}, {"t": "Venting (Supportive Response)", "d": "When someone vents, they first need to feel heard/validated — not an immediate action plan or a redirect to your own similar story.", "c": ""}];
 const XLSX_FILE = "pm_glossary.xlsx";
 const STATE_KEY = "enmgt5900_m2_srs_v1";
 const META_KEY  = "enmgt5900_m2_meta_v1";
@@ -564,6 +565,14 @@ function buildPrint(){
   $("printSheet").innerHTML=html;
 }
 
+function downloadXlsx(){
+  if(typeof XLSX==="undefined"){ alert("Excel export needs the spreadsheet library, which appears to be blocked on this network."); return; }
+  const data=[["Term","Definition","Module"]];
+  ALL.forEach(c=>data.push([c.t,c.d,MODULE]));
+  const ws=XLSX.utils.aoa_to_sheet(data); ws["!cols"]=[{wch:32},{wch:94},{wch:12}];
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Glossary");
+  XLSX.writeFile(wb,"ENMGT5900_"+MODULE.replace(/\s+/g,"")+"_flashcards.xlsx");
+}
 /* ---------- events ---------- */
 card.addEventListener("click", flip);
 $("starF").addEventListener("click", e=>{ e.stopPropagation(); if(!cur)return;
@@ -584,6 +593,7 @@ $("restart").onclick=()=>{ if(mode==="study") startStudy(false); else { bi=0; br
 $("reset").onclick=doReset;
 $("theme").onclick=()=>{ meta.theme = meta.theme==="dark"?"light":"dark"; saveMeta(); applyTheme(); };
 $("print").onclick=()=>{ buildPrint(); window.print(); };
+$("download").onclick=downloadXlsx;
 $("search").addEventListener("input", ()=>refresh());
 
 document.addEventListener("keydown", e=>{

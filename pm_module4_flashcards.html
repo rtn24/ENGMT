@@ -171,6 +171,7 @@
     <div style="display:flex;gap:6px">
       <button class="iconbtn" id="theme" title="Toggle dark mode">Dark</button>
       <button class="iconbtn" id="print" title="Print study sheet">Print</button>
+      <button class="iconbtn" id="download" title="Download these flashcards as Excel">Excel</button>
     </div>
   </div>
 
@@ -564,6 +565,14 @@ function buildPrint(){
   $("printSheet").innerHTML=html;
 }
 
+function downloadXlsx(){
+  if(typeof XLSX==="undefined"){ alert("Excel export needs the spreadsheet library, which appears to be blocked on this network."); return; }
+  const data=[["Term","Definition","Module"]];
+  ALL.forEach(c=>data.push([c.t,c.d,MODULE]));
+  const ws=XLSX.utils.aoa_to_sheet(data); ws["!cols"]=[{wch:32},{wch:94},{wch:12}];
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Glossary");
+  XLSX.writeFile(wb,"ENMGT5900_"+MODULE.replace(/\s+/g,"")+"_flashcards.xlsx");
+}
 /* ---------- events ---------- */
 card.addEventListener("click", flip);
 $("starF").addEventListener("click", e=>{ e.stopPropagation(); if(!cur)return;
@@ -584,6 +593,7 @@ $("restart").onclick=()=>{ if(mode==="study") startStudy(false); else { bi=0; br
 $("reset").onclick=doReset;
 $("theme").onclick=()=>{ meta.theme = meta.theme==="dark"?"light":"dark"; saveMeta(); applyTheme(); };
 $("print").onclick=()=>{ buildPrint(); window.print(); };
+$("download").onclick=downloadXlsx;
 $("search").addEventListener("input", ()=>refresh());
 
 document.addEventListener("keydown", e=>{

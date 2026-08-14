@@ -171,6 +171,7 @@
     <div style="display:flex;gap:6px">
       <button class="iconbtn" id="theme" title="Toggle dark mode">Dark</button>
       <button class="iconbtn" id="print" title="Print study sheet">Print</button>
+      <button class="iconbtn" id="download" title="Download these flashcards as Excel">Excel</button>
     </div>
   </div>
 
@@ -252,7 +253,7 @@
 
 <script>
 /* ---------- data ---------- */
-const FALLBACK = [{"t": "'Performing' Stage Pitfall", "d": "A common trap where a high-functioning team becomes complacent or overconfident and stops improving.", "c": ""}, {"t": "8 Keys to a Safe Environment", "d": "A class list of practices for building psychological safety on a team.", "c": ""}, {"t": "Co-Creation", "d": "A collaborative principle where team members share ownership of outcomes; it removes the ability to 'play the victim' when things go wrong.", "c": ""}, {"t": "Distributed/Remote Team Challenges", "d": "Priorities such as communication, trust, and inclusion when managing a team that isn't co-located.", "c": ""}, {"t": "Drexler-Sibbet Team Performance Model", "d": "A seven-stage model of team creation and sustainment; certain stages (like trust-building or renewal) are often overlooked or never fully achieved.", "c": ""}, {"t": "Group vs. Team", "d": "A group is a collection of individuals with individual goals; a team shares a common goal, mutual accountability, and interdependence.", "c": ""}, {"t": "Herzberg's Two-Factor Theory", "d": "Distinguishes Motivators (satisfaction factors like achievement, recognition, growth) from Hygiene Factors (dissatisfaction factors like salary, working conditions).", "c": ""}, {"t": "Hygiene Factors", "d": "Elements (e.g. money, conditions) that cause dissatisfaction if absent but don't create lasting motivation; money is a hygiene factor, not a strong motivator.", "c": ""}, {"t": "MBWA (Management By Walking Around)", "d": "A leadership practice of staying visible and engaged by informally checking in with people where they work.", "c": ""}, {"t": "Maslow's Hierarchy of Needs", "d": "Ascending human needs: Physiological → Safety/Security → Love/Belonging → Esteem → Self-Actualization.", "c": ""}, {"t": "Motivators", "d": "Factors (achievement, recognition, responsibility) that genuinely drive engagement — but only once hygiene factors are adequately met.", "c": ""}, {"t": "Team Charter (Contract)", "d": "A foundational document defining a team's shared values, norms, roles, and working agreements to prevent future conflict and speed decisions.", "c": ""}, {"t": "Tuckman's Team Stages", "d": "The sequence of team development: Forming → Storming → Norming → Performing → Adjourning.", "c": ""}];
+const FALLBACK = [{"t": "'Performing' Stage Pitfall", "d": "A common trap where a high-functioning team becomes complacent or overconfident and stops improving.", "c": ""}, {"t": "8 Keys to a Safe Environment", "d": "A class list of practices for building psychological safety on a team.", "c": ""}, {"t": "Co-Creation", "d": "A collaborative principle where team members share ownership of outcomes; it removes the ability to 'play the victim' when things go wrong.", "c": ""}, {"t": "Distributed/Remote Team Challenges", "d": "Priorities such as communication, trust, and inclusion when managing a team that isn't co-located.", "c": ""}, {"t": "Drexler-Sibbet Team Performance Model", "d": "A seven-stage model of team creation and sustainment; certain stages (like trust-building or renewal) are often overlooked or never fully achieved.", "c": ""}, {"t": "Group vs. Team", "d": "A group is a collection of individuals with individual goals; a team shares a common goal, mutual accountability, and interdependence.", "c": ""}, {"t": "Herzberg's Two-Factor Theory", "d": "Distinguishes Motivators (satisfaction factors like achievement, recognition, growth) from Hygiene Factors (dissatisfaction factors like salary, working conditions).", "c": ""}, {"t": "Hygiene Factors", "d": "Elements (e.g. money, conditions) that cause dissatisfaction if absent but don't create lasting motivation; money is a hygiene factor, not a strong motivator.", "c": ""}, {"t": "Maslow's Hierarchy of Needs", "d": "Ascending human needs: Physiological → Safety/Security → Love/Belonging → Esteem → Self-Actualization.", "c": ""}, {"t": "MBWA (Management By Walking Around)", "d": "A leadership practice of staying visible and engaged by informally checking in with people where they work.", "c": ""}, {"t": "Motivators", "d": "Factors (achievement, recognition, responsibility) that genuinely drive engagement — but only once hygiene factors are adequately met.", "c": ""}, {"t": "Team Charter (Contract)", "d": "A foundational document defining a team's shared values, norms, roles, and working agreements to prevent future conflict and speed decisions.", "c": ""}, {"t": "Tuckman's Team Stages", "d": "The sequence of team development: Forming → Storming → Norming → Performing → Adjourning.", "c": ""}];
 const XLSX_FILE = "pm_glossary.xlsx";
 const STATE_KEY = "enmgt5900_m3_srs_v1";
 const META_KEY  = "enmgt5900_m3_meta_v1";
@@ -564,6 +565,14 @@ function buildPrint(){
   $("printSheet").innerHTML=html;
 }
 
+function downloadXlsx(){
+  if(typeof XLSX==="undefined"){ alert("Excel export needs the spreadsheet library, which appears to be blocked on this network."); return; }
+  const data=[["Term","Definition","Module"]];
+  ALL.forEach(c=>data.push([c.t,c.d,MODULE]));
+  const ws=XLSX.utils.aoa_to_sheet(data); ws["!cols"]=[{wch:32},{wch:94},{wch:12}];
+  const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Glossary");
+  XLSX.writeFile(wb,"ENMGT5900_"+MODULE.replace(/\s+/g,"")+"_flashcards.xlsx");
+}
 /* ---------- events ---------- */
 card.addEventListener("click", flip);
 $("starF").addEventListener("click", e=>{ e.stopPropagation(); if(!cur)return;
@@ -584,6 +593,7 @@ $("restart").onclick=()=>{ if(mode==="study") startStudy(false); else { bi=0; br
 $("reset").onclick=doReset;
 $("theme").onclick=()=>{ meta.theme = meta.theme==="dark"?"light":"dark"; saveMeta(); applyTheme(); };
 $("print").onclick=()=>{ buildPrint(); window.print(); };
+$("download").onclick=downloadXlsx;
 $("search").addEventListener("input", ()=>refresh());
 
 document.addEventListener("keydown", e=>{
